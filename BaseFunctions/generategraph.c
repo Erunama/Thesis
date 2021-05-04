@@ -1,15 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include <math.h>
 #define NUM_GRAPHS 10
 #define MIN_GRAPH_SIZE 10
 #define MAX_GRAPH_SIZE 32
 
-void genGraph(char* filename, int seed, double edge_density) {
+void genGraph(char* filename, int seed, double edge_density, int graph_size) {
     FILE* fp = fopen(filename, "w");
     srand(seed);
-    int graph_size = MIN_GRAPH_SIZE + rand() % (MAX_GRAPH_SIZE+1 - MIN_GRAPH_SIZE);
     int **am;
     am = (int**)malloc(graph_size * sizeof(int*));
     for (int i = 0; i < graph_size; i++) {
@@ -41,18 +40,19 @@ void genGraph(char* filename, int seed, double edge_density) {
     free(am);
 }
 
-​
 int main (int argc, char *argv[]) {
     (void) argc;
     (void) argv;
-    double edge_density = 0.1;
-    for (int i = 0; i < NUM_GRAPHS; i++) {
-        for (int j = 0; j < NUM_GRAPHS; j++) {
-            char filename[128];
-            sprintf(filename, "./input/%d_testGraph_%d.txt\n", (int) (edge_density*100), j);
-            genGraph(filename, j, edge_density);
+    for (int graph_size = MIN_GRAPH_SIZE; graph_size <= MAX_GRAPH_SIZE; graph_size++) {
+        double edge_density = 0.1;
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 5; j++) {
+                char filename[128];
+                int density = (int)(edge_density*100);
+                sprintf(filename, "./input/%dsize_%ddens_%d.txt", graph_size, density, j);
+                genGraph(filename, j, edge_density, graph_size);
+            }
+            edge_density = edge_density + 0.1;
         }
-        edge_density = edge_density + 0.1;
     }
 }
-

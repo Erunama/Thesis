@@ -2,13 +2,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-​
-
 #define NUM_GRAPHS 10
 #define MIN_GRAPH_SIZE 10
 #define MAX_GRAPH_SIZE 32
-
-​
 
 void genGraph(char* filename, int seed, double edge_density) {
     FILE* fp = fopen(filename, "w");

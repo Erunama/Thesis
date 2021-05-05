@@ -22,12 +22,13 @@
  */
 struct matrix *m_new(int rows, int cols) {
     struct matrix *matrix = malloc(sizeof(struct matrix));
-    if (!matrix) {
+    if (!matrix || !rows || !cols) {
         return NULL;
     }
     matrix->rows = rows;
     matrix->cols = cols;
-    matrix->data = malloc(rows * cols * sizeof(char));
+    matrix->data = NULL;
+    matrix->data = calloc(rows * cols, sizeof(char));
     if (!matrix->data) {
         return NULL;
     }

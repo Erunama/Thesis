@@ -6,7 +6,7 @@
 #define MIN_GRAPH_SIZE 10
 #define MAX_GRAPH_SIZE 32
 
-int GRAPH_SIZE;
+int GRAPH_SIZE = 0;
 /* multiply a matrix and vector and return a vector */
 struct vector *mul_matrix_vector(struct matrix *matrix, struct vector *vector){
     if (matrix->cols != vector->size) {
@@ -97,15 +97,14 @@ int cc3(struct matrix *matrix) {
         return 1;
     }
     *(vector) = 1;
-    char d;
-    char iters;
+    char d = 0;
+    char iters = 0;
     do {
         for (int j = 0; j < matrix->rows; j++) {
             for (int i = 0; i < matrix->cols; i++) {
                 *(result + j) += (*(vector + i) * *(matrix->data + j * matrix->rows + i));
             }
             d += ((*(vector + j) + *(result + j)) != 0 ? 1 : 0);
-            printf("vec, res, d: %d, %d, %d\n", d, *(vector + j), *(result + j));
         }
         if (d == matrix->cols) {
             free(vector);
@@ -159,9 +158,12 @@ int cc4(char *matrix) {
     while (iters < GRAPH_SIZE);
     free(vector);
     free(result);
-    printf("DN: %d\n", d);
     return 1;
 }
+
+/* Fifth iteration of my CCa
+ * This one is the most abstract: uses only 2 allocated data structures based on the graph size
+ */
 int cc5(char *matrix) {
     char *vector = calloc(GRAPH_SIZE, sizeof(char));
     if(!vector) {
@@ -189,13 +191,44 @@ int cc5(char *matrix) {
     return 1;
 }
 
+/* Sixth iteration of my CCa. Try to combine earlier parts of cc3 and cc5
+ * This one is the most abstract: uses only 2 allocated data structures based on the graph size
+ */
+int cc6(char *matrix) {
+    char *vector = calloc(GRAPH_SIZE, sizeof(char));
+    if(!vector) {
+        return 1;
+    }
+    *(vector) = 1;
+    char d = 1;
+    char iters = 0;
+    do {
+        for (int j = 0; j < GRAPH_SIZE; j++) {
+            for (int i = 0; i < GRAPH_SIZE; i++) {
+                *(vector + j) |= (*(vector + i) * *(matrix + j * GRAPH_SIZE + i));
+            }
+            d += *(vector + j);
+        }
+        if (d == GRAPH_SIZE) {
+            free(vector);
+            return 0;
+        }
+        d = 1;
+        iters++;
+    }
+    while (iters < GRAPH_SIZE);
+    free(vector);
+    return 1;
+}
+
 struct matrix *readGraph(char* filename) {
     FILE* fp = fopen(filename, "r");
     int src;
     int dest;
-    int graph_size;
-    fscanf(fp, "%d", &graph_size);
-    struct matrix *am = m_fill(MAX_GRAPH_SIZE, MAX_GRAPH_SIZE, 0);
+    GRAPH_SIZE = 0;
+    fscanf(fp, "%d", &GRAPH_SIZE);
+    // printf("Gs: %d\n", GRAPH_SIZE);
+    struct matrix *am = m_fill(GRAPH_SIZE, GRAPH_SIZE, 0);
     while (fscanf(fp, "%d %d", &src, &dest) != EOF) {
         m_set(am, src-1, dest-1, 1);
         m_set(am, dest-1, src-1, 1);
@@ -210,7 +243,7 @@ char *readGraph2(char* filename) {
     int dest;
 
     fscanf(fp, "%d", &GRAPH_SIZE);
-    printf("Gs: %d\n", GRAPH_SIZE);
+    // printf("Gs: %d\n", GRAPH_SIZE);
     char *matrix = calloc(GRAPH_SIZE * GRAPH_SIZE, sizeof(char));
     while (fscanf(fp, "%d %d", &src, &dest) != EOF) {
         *(matrix + (src-1) * GRAPH_SIZE + (dest-1)) = 1;
@@ -219,6 +252,7 @@ char *readGraph2(char* filename) {
     fclose(fp);
     return matrix;
 }
+
 int main (int argc, char *argv[]) {
     (void) argc;
     (void) argv;
@@ -233,8 +267,8 @@ int main (int argc, char *argv[]) {
                 char filename[256];
                 sprintf(filename, "./input/%dsize_%ddens_%d.txt", size, density, inputfile);
                 char outname[256];
-                sprintf(outname, "./results/%dsize_%ddens_%d.out", size, density, inputfile);
-                FILE* fout = fopen(outname, "w");
+                sprintf(outname, "./results/results.csv");
+                FILE* fout = fopen(outname, "a+");
                 // struct matrix *am = readGraph(filename);
                 char *am = readGraph2(filename);
                 cca = cc5(am);
@@ -251,16 +285,17 @@ int main (int argc, char *argv[]) {
                 }
                 // m_free(am);
                 free(am);
-                fprintf(fout, "Input file: %s\n", filename);
-                fprintf(fout, "Graph size: %d\nEdge density: %d\n", size, density);
-                fprintf(fout, "Total time used for %d iterations: %.10f\n", iterations, total_time);
-                fprintf(fout, "Average time per iteration: %.10f\n", total_time/iterations);
-                if (!cca) {
-                    fprintf(fout, "Graph is connected!\n");
-                }
-                else {
-                    fprintf(fout, "Graph is not connected!\n");
-                }
+                // fprintf(fout, "Input file: %s\n", filename);
+                // fprintf(fout, "Graph size: %d\nEdge density: %d\n", size, density);
+                fprintf(fout, "%d,%d,%.10f\n", size, density, total_time);
+                // printf("%.10f\n", total_time);
+                // fprintf(fout, "Average time per iteration: %.10f\n", total_time/iterations);
+                // if (!cca) {
+                //     fprintf(fout, "Graph is connected!\n");
+                // }
+                // else {
+                //     fprintf(fout, "Graph is not connected!\n");
+                // }
                 fclose(fout);
             }
             edge_density = edge_density + 0.1;

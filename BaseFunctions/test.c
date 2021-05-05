@@ -10,9 +10,13 @@ struct vector *mul_matrix_vector(struct matrix *matrix, struct vector *vector){
     if (matrix->cols != vector->size) {
         return NULL;
     }
-    struct vector *result = v_new(matrix->rows);
-    for (int j = 0; j < matrix->rows; j++) {
-        float *row = m_return_row(matrix, j);
+    int rowz = matrix->rows;
+    if (!rowz) {
+        return NULL;
+    }
+    struct vector *result = v_new(rowz);
+    for (int j = 0; j < rowz; j++) {
+        char *row = m_return_row(matrix, j);
         for (int i = 0; i < vector->size; i++) {
             v_set(result, j, (v_get(vector, i) * *(row + i) + v_get(result, j)));
         }
@@ -20,6 +24,23 @@ struct vector *mul_matrix_vector(struct matrix *matrix, struct vector *vector){
     }
     return result;
 
+}
+
+struct vector *mul_matrix_vector_optimized(struct matrix *matrix, struct vector *vector){
+    if (matrix->cols != vector->size) {
+        return NULL;
+    }
+    int rowz = matrix->rows;
+    if (!rowz) {
+        return NULL;
+    }
+    struct vector *result = v_fill(rowz, 0);
+    for (int j = 0; j < rowz; j++) {
+        for (int i = 0; i < vector->size; i++) {
+            *(result->data + j) += (*(vector->data + i) * *(matrix->data + j * rowz + i));
+        }
+    }
+    return result;
 }
 
 /* Basic CC algorithm based on bfs */
@@ -40,15 +61,53 @@ int cc(struct matrix *matrix) {
     return 1;
 }
 
-// /* Pass function to time the call */
-// double timing(int (*f)(struct matrix *), struct matrix *matrix) {
-//     clock_t t;
-//     t = clock();
-//     (*f)(matrix);
-//     t = clock() - t;
-//     double time_taken = ((double)t)/CLOCKS_PER_SEC;
-//     return time_taken;
-// }
+/* Basic CC algorithm based on bfs */
+int cc2(struct matrix *matrix) {
+    struct vector *vector = v_fill(matrix->cols, 0);
+    *(vector->data) = 1;
+    char d;
+    for (int i = 0; i < matrix->rows; i++) {
+        struct vector *res = mul_matrix_vector_optimized(matrix, vector);
+        for (int i = 0; i < vector->size; i++) {
+            *(vector->data + i) += *(res->data + i);
+            *(vector->data + i) = *(vector->data + i) != 0 ? (*(vector->data + i) / *(vector->data + i)) : 0;
+            d += *(vector->data + i);
+        }
+        if (d == vector->size) {
+            free(vector->data);
+            free(vector);
+            return 0;
+        }
+        v_free(res);
+    }
+    free(vector->data);
+    free(vector);
+    return 1;
+}
+
+/* Basic CC algorithm based on bfs */
+int cc3(struct matrix *matrix) {
+    struct vector *vector = v_fill(matrix->cols, 0);
+    *(vector->data) = 1;
+    char d;
+    for (int i = 0; i < matrix->rows; i++) {
+        struct vector *res = mul_matrix_vector_optimized(matrix, vector);
+        for (int i = 0; i < vector->size; i++) {
+            *(vector->data + i) += *(res->data + i);
+            *(vector->data + i) = *(vector->data + i) != 0 ? (*(vector->data + i) / *(vector->data + i)) : 0;
+            d += *(vector->data + i);
+        }
+        if (d == vector->size) {
+            free(vector->data);
+            free(vector);
+            return 0;
+        }
+        v_free(res);
+    }
+    free(vector->data);
+    free(vector);
+    return 1;
+}
 
 struct matrix *readGraph(char* filename) {
     FILE* fp = fopen(filename, "r");
@@ -56,7 +115,7 @@ struct matrix *readGraph(char* filename) {
     int dest;
     int graph_size;
     fscanf(fp, "%d", &graph_size);
-    struct matrix *am = m_fill(MAX_GRAPH_SIZE, MAX_GRAPH_SIZE, 0.0);
+    struct matrix *am = m_fill(MAX_GRAPH_SIZE, MAX_GRAPH_SIZE, 0);
     while (fscanf(fp, "%d %d", &src, &dest) != EOF) {
         m_set(am, src-1, dest-1, 1.0);
         m_set(am, dest-1, src-1, 1.0);
@@ -68,7 +127,7 @@ struct matrix *readGraph(char* filename) {
 int main (int argc, char *argv[]) {
     (void) argc;
     (void) argv;
-    int iterations = 1;
+    int iterations = 1000;
     int cca;
     for (int size = MIN_GRAPH_SIZE; size < MAX_GRAPH_SIZE; size++) {
         double edge_density = 0.1;
@@ -82,12 +141,12 @@ int main (int argc, char *argv[]) {
                 sprintf(outname, "./results/%dsize_%ddens_%d.out", size, density, inputfile);
                 FILE* fout = fopen(outname, "w");
                 struct matrix *am = readGraph(filename);
-                cca = cc(am);
+                cca = cc2(am);
                 for (int i = 0; i < iterations; i++) {
                     struct timespec begin, end;
                     double cpu_time_used;
                     clock_gettime(CLOCK_REALTIME, &begin);
-                    cca = cc(am);
+                    cca = cc2(am);
                     clock_gettime(CLOCK_REALTIME, &end);
                     long seconds = end.tv_sec - begin.tv_sec;
                     long nseconds = end.tv_nsec - begin.tv_nsec;
@@ -105,6 +164,7 @@ int main (int argc, char *argv[]) {
                 else {
                     fprintf(fout, "Graph is not connected!\n");
                 }
+                fclose(fout);
             }
             edge_density = edge_density + 0.1;
         }

@@ -14,21 +14,19 @@ struct vector *v_new(int size) {
         return NULL;
     }
     vector->size = size;
-    vector->data = malloc(size * sizeof(float));
+    vector->data = malloc(size * sizeof(char));
     if(!vector->data) {
         /* Throw Error */
         return NULL;
     }
     return vector;
 }
-struct vector *v_fill(int size, float value) {
+struct vector *v_fill(int size, char value) {
     struct vector *vector = v_new(size);
-    for(int i = 0; i < size; i++) {
-        v_set(vector, i, value);
-    }
+    memset(vector->data, value, sizeof(vector->data));
     return vector;
 }
-struct vector *v_from_array(int size, float *array) {
+struct vector *v_from_array(int size, char *array) {
     struct vector *vector = malloc(sizeof(struct vector));
     if(!vector) {
         /* Throw Error */
@@ -55,7 +53,7 @@ void v_add(struct vector *vectorA, struct vector *vectorB) {
         return;
     }
     for (int i = 0; i < vectorA->size; i++) {
-        v_set(vectorA, i, (v_get(vectorA, i) + v_get(vectorB, i)));
+        *(vectorA->data + i) += *(vectorB->data + i);
     }
     return;
 }
@@ -66,21 +64,21 @@ void v_mod(struct vector *vector, int value) {
 }
 void v_capped(struct vector *vector) {
     for (int i = 0; i < vector->size; i++) {
-        char c = v_get(vector, i);
-        v_set(vector, i, c != 0.0 ? (c / c) : 0.0);
+        char c = *(vector->data + i);
+        *(vector->data + i) = c != 0 ? (c / c) : 0;
     }
 }
-float v_rank(struct vector *vector) {
-    float sum = 0;
+char v_rank(struct vector *vector) {
+    char sum = 0;
     for (int i = 0; i < vector->size; i++) {
-        sum += v_get(vector, i);
+        sum += *(vector->data + i);
     }
     return sum;
 }
-void v_set(struct vector *vector, int i, float value){
+void v_set(struct vector *vector, int i, char value){
     *(vector->data + i) = value;
 }
-float v_get(struct vector *vector, int i) {
+char v_get(struct vector *vector, int i) {
     return *(vector->data + i);
 }
 // float *v_sub(const float *vectorA, const float *vectorB);

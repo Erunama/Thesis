@@ -51,7 +51,7 @@ struct matrix *readGraph(char* filename) {
     int dest;
     int graph_size;
     fscanf(fp, "%d", &graph_size);
-    struct matrix *am = m_fill(graph_size, graph_size, 0.0);
+    struct matrix *am = m_fill(MAX_GRAPH_SIZE, MAX_GRAPH_SIZE, 0.0);
     while (fscanf(fp, "%d %d", &src, &dest) != EOF) {
         m_set(am, src-1, dest-1, 1.0);
         m_set(am, dest-1, src-1, 1.0);
@@ -77,9 +77,8 @@ int main (int argc, char *argv[]) {
                 sprintf(outname, "./results/%dsize_%ddens_%d.out", size, density, inputfile);
                 FILE* fout = fopen(outname, "w");
                 struct matrix *am = readGraph(filename);
+                cca = cc(am);
                 for (int i = 0; i < iterations; i++) {
-
-                    // printAdjacencyMatrix(am);
                     struct timespec begin, end;
                     double cpu_time_used;
                     clock_gettime(CLOCK_REALTIME, &begin);

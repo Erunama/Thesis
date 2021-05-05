@@ -16,6 +16,7 @@ struct vector *mul_matrix_vector(struct matrix *matrix, struct vector *vector){
         for (int i = 0; i < vector->size; i++) {
             v_set(result, j, (v_get(vector, i) * *(row + i) + v_get(result, j)));
         }
+        free(row);
     }
     return result;
 
@@ -26,12 +27,16 @@ int cc(struct matrix *matrix) {
     struct vector *vector = v_fill(matrix->cols, 0);
     v_set(vector, 0, 1);
     for (int i = 0; i < matrix->rows; i++) {
-        v_add(vector, mul_matrix_vector(matrix, vector));
+        struct vector *res = mul_matrix_vector(matrix, vector);
+        v_add(vector, res);
+        v_free(res);
         v_capped(vector);
         if (v_rank(vector) == vector->size) {
+            v_free(vector);
             return 0;
         }
     }
+    v_free(vector);
     return 1;
 }
 
@@ -63,7 +68,7 @@ struct matrix *readGraph(char* filename) {
 int main (int argc, char *argv[]) {
     (void) argc;
     (void) argv;
-    int iterations = 1000;
+    int iterations = 1;
     int cca;
     for (int size = MIN_GRAPH_SIZE; size < MAX_GRAPH_SIZE; size++) {
         double edge_density = 0.1;

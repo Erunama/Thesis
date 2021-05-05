@@ -27,7 +27,7 @@ struct vector *v_scalar_mul(const struct vector *vectorA, const float x);
 void v_set(struct vector *vector, int i, float value);
 float v_get(struct vector *vector, int i);
 
-
+void v_free(struct vector *vector);
 
 /* Matrix functions ? */
 

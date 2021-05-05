@@ -66,7 +66,8 @@ void v_mod(struct vector *vector, int value) {
 }
 void v_capped(struct vector *vector) {
     for (int i = 0; i < vector->size; i++) {
-        v_set(vector, i, v_get(vector, i) != 0.0 ? (v_get(vector, i) / v_get(vector, i)) : 0.0);
+        char c = v_get(vector, i);
+        v_set(vector, i, c != 0.0 ? (c / c) : 0.0);
     }
 }
 float v_rank(struct vector *vector) {
@@ -89,3 +90,7 @@ float v_get(struct vector *vector, int i) {
 
 // void *v_free(matrix_t *matrix);
 // void *v_print(const matrix_t *matrix);
+void v_free(struct vector *vector) {
+    free(vector->data);
+    free(vector);
+}

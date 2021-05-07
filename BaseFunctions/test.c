@@ -176,6 +176,52 @@ int cc5(char *matrix) {
         for (int j = 0; j < GRAPH_SIZE; j++) {
             for (int i = 0; i < GRAPH_SIZE; i++) {
                 *(vector + j) |= (*(vector + i) & *(matrix + j * GRAPH_SIZE + i));
+                *(vector + j) |= (*(vector + i) & *(matrix + j * GRAPH_SIZE + i));
+            }
+            d &= *(vector + j);
+        }
+        if (d) {
+            free(vector);
+            return 0;
+        }
+        d = 1;
+        iters++;
+    }
+    while (iters < GRAPH_SIZE);
+    free(vector);
+    return 1;
+}
+
+int cc7(char *matrix) {
+    char *vector = calloc(GRAPH_SIZE, sizeof(char));
+    if(!vector) {
+        return 1;
+    }
+    *(vector) = 1;
+    char d = 1;
+    char iters = 0;
+    char loop_size = GRAPH_SIZE - 10;
+    do {
+        for (int j = 0; j < GRAPH_SIZE; j++) {
+            /* First ten entries because min graph size is 10 */
+            // *(vector + j) |= (*(vector ) & *(matrix + j * GRAPH_SIZE));
+            // *(vector + j) |= (*(vector + 1) & *(matrix + j * GRAPH_SIZE + 1));
+            // *(vector + j) |= (*(vector + 2) & *(matrix + j * GRAPH_SIZE + 2));
+            // *(vector + j) |= (*(vector + 3) & *(matrix + j * GRAPH_SIZE + 3));
+            // *(vector + j) |= (*(vector + 4) & *(matrix + j * GRAPH_SIZE + 4));
+            // *(vector + j) |= (*(vector + 5) & *(matrix + j * GRAPH_SIZE + 5));
+            // *(vector + j) |= (*(vector + 6) & *(matrix + j * GRAPH_SIZE + 6));
+            // *(vector + j) |= (*(vector + 7) & *(matrix + j * GRAPH_SIZE + 7));
+            // *(vector + j) |= (*(vector + 8) & *(matrix + j * GRAPH_SIZE + 8));
+            // *(vector + j) |= (*(vector + 9) & *(matrix + j * GRAPH_SIZE + 9));
+
+            int i = 0;
+            for (; i < loop_size - 1; i+=2) {
+                *(vector + j) |= (*(vector + i) & *(matrix + j * GRAPH_SIZE + i));
+                *(vector + j) |= (*(vector + i + 1) & *(matrix + j * GRAPH_SIZE + i + 1));
+            }
+            if (i < loop_size) {
+                *(vector + j) |= (*(vector + i) & *(matrix + j * GRAPH_SIZE + i));
             }
             d &= *(vector + j);
         }
@@ -210,6 +256,139 @@ int cc6(char *matrix) {
             d += *(vector + j);
         }
         if (d == GRAPH_SIZE) {
+            free(vector);
+            return 0;
+        }
+        d = 1;
+        iters++;
+    }
+    while (iters < GRAPH_SIZE);
+    free(vector);
+    return 1;
+}
+
+int cc8(char *matrix) {
+    char *vector = calloc(GRAPH_SIZE, sizeof(char));
+    if(!vector) {
+        return 1;
+    }
+    *(vector) = 1;
+    char d = 1;
+    char iters = 0;
+    char loop_size = GRAPH_SIZE - 10;
+    do {
+        for (int j = 0; j < GRAPH_SIZE; j++) {
+            /* First ten entries because min graph size is 10 */
+            *(vector + j) |= (*(vector ) & *(matrix + j * GRAPH_SIZE));
+            *(vector + j) |= (*(vector + 1) & *(matrix + j * GRAPH_SIZE + 1));
+            *(vector + j) |= (*(vector + 2) & *(matrix + j * GRAPH_SIZE + 2));
+            *(vector + j) |= (*(vector + 3) & *(matrix + j * GRAPH_SIZE + 3));
+            *(vector + j) |= (*(vector + 4) & *(matrix + j * GRAPH_SIZE + 4));
+            *(vector + j) |= (*(vector + 5) & *(matrix + j * GRAPH_SIZE + 5));
+            *(vector + j) |= (*(vector + 6) & *(matrix + j * GRAPH_SIZE + 6));
+            *(vector + j) |= (*(vector + 7) & *(matrix + j * GRAPH_SIZE + 7));
+            *(vector + j) |= (*(vector + 8) & *(matrix + j * GRAPH_SIZE + 8));
+            *(vector + j) |= (*(vector + 9) & *(matrix + j * GRAPH_SIZE + 9));
+
+            int i = 10;
+            for (; i < loop_size - 1; i+=2) {
+                *(vector + j) |= (*(vector + i) & *(matrix + j * GRAPH_SIZE + i));
+                *(vector + j) |= (*(vector + i + 1) & *(matrix + j * GRAPH_SIZE + i + 1));
+            }
+            for ( ; i < loop_size; i++) {
+                *(vector + j) |= (*(vector + i) & *(matrix + j * GRAPH_SIZE + i));
+            }
+            d &= *(vector + j);
+        }
+        if (d) {
+            free(vector);
+            return 0;
+        }
+        d = 1;
+        iters++;
+    }
+    while (iters < GRAPH_SIZE);
+    free(vector);
+    return 1;
+}
+
+/* BEST CASE CURRENTLY */
+int cc9(char *matrix) {
+    char *vector = calloc(GRAPH_SIZE, sizeof(char));
+    if(!vector) {
+        return 1;
+    }
+    *(vector) = 1;
+    char d = 1;
+    char iters = 0;
+    char loop_size = GRAPH_SIZE - 10;
+    do {
+        for (int j = 0; j < GRAPH_SIZE; j++) {
+            /* First ten entries because min graph size is 10 */
+            *(vector + j) |= (*(vector ) & *(matrix + j * GRAPH_SIZE));
+            *(vector + j) |= (*(vector + 1) & *(matrix + j * GRAPH_SIZE + 1));
+            *(vector + j) |= (*(vector + 2) & *(matrix + j * GRAPH_SIZE + 2));
+            *(vector + j) |= (*(vector + 3) & *(matrix + j * GRAPH_SIZE + 3));
+            *(vector + j) |= (*(vector + 4) & *(matrix + j * GRAPH_SIZE + 4));
+            *(vector + j) |= (*(vector + 5) & *(matrix + j * GRAPH_SIZE + 5));
+            *(vector + j) |= (*(vector + 6) & *(matrix + j * GRAPH_SIZE + 6));
+            *(vector + j) |= (*(vector + 7) & *(matrix + j * GRAPH_SIZE + 7));
+            *(vector + j) |= (*(vector + 8) & *(matrix + j * GRAPH_SIZE + 8));
+            *(vector + j) |= (*(vector + 9) & *(matrix + j * GRAPH_SIZE + 9));
+
+            int i = 10;
+            for (; i < loop_size - 1; i+=3) {
+                *(vector + j) |= (*(vector + i) & *(matrix + j * GRAPH_SIZE + i));
+                *(vector + j) |= (*(vector + i + 1) & *(matrix + j * GRAPH_SIZE + i + 1));
+                *(vector + j) |= (*(vector + i + 2) & *(matrix + j * GRAPH_SIZE + i + 2));
+            }
+            for (; i < loop_size; i++) {
+                *(vector + j) |= (*(vector + i) & *(matrix + j * GRAPH_SIZE + i));
+            }
+            d &= *(vector + j);
+        }
+        if (d) {
+            free(vector);
+            return 0;
+        }
+        d = 1;
+        iters++;
+    }
+    while (iters < GRAPH_SIZE);
+    free(vector);
+    return 1;
+}
+
+
+int cc10(char *matrix) {
+    char *vector = calloc(GRAPH_SIZE, sizeof(char));
+    if(!vector) {
+        return 1;
+    }
+    *(vector) = 1;
+    char d = 1;
+    char iters = 0;
+    char loop_size = GRAPH_SIZE - 10;
+    do {
+        for (int j = 0; j < GRAPH_SIZE; j++) {
+            /* First ten entries because min graph size is 10 */
+            *(vector + j) |= (*(vector ) & *(matrix + j * GRAPH_SIZE));
+            *(vector + j) |= (*(vector + 1) & *(matrix + j * GRAPH_SIZE + 1));
+            *(vector + j) |= (*(vector + 2) & *(matrix + j * GRAPH_SIZE + 2));
+            *(vector + j) |= (*(vector + 3) & *(matrix + j * GRAPH_SIZE + 3));
+            *(vector + j) |= (*(vector + 4) & *(matrix + j * GRAPH_SIZE + 4));
+            *(vector + j) |= (*(vector + 5) & *(matrix + j * GRAPH_SIZE + 5));
+            *(vector + j) |= (*(vector + 6) & *(matrix + j * GRAPH_SIZE + 6));
+            *(vector + j) |= (*(vector + 7) & *(matrix + j * GRAPH_SIZE + 7));
+            *(vector + j) |= (*(vector + 8) & *(matrix + j * GRAPH_SIZE + 8));
+            *(vector + j) |= (*(vector + 9) & *(matrix + j * GRAPH_SIZE + 9));
+
+            for (int i = 10; i < loop_size; i++) {
+                *(vector + j) |= (*(vector + i) & *(matrix + j * GRAPH_SIZE + i));
+            }
+            d &= *(vector + j);
+        }
+        if (d) {
             free(vector);
             return 0;
         }
@@ -256,6 +435,7 @@ char *readGraph2(char* filename) {
 int main (int argc, char *argv[]) {
     (void) argc;
     (void) argv;
+
     int iterations = 10000;
     int cca = 0;
     for (int size = MIN_GRAPH_SIZE; size < MAX_GRAPH_SIZE; size++) {
@@ -267,16 +447,16 @@ int main (int argc, char *argv[]) {
                 char filename[256];
                 sprintf(filename, "./input/%dsize_%ddens_%d.txt", size, density, inputfile);
                 char outname[256];
-                sprintf(outname, "./results/results.csv");
+                sprintf(outname, "./results/results_cc9_das2.csv");
                 FILE* fout = fopen(outname, "a+");
                 // struct matrix *am = readGraph(filename);
                 char *am = readGraph2(filename);
-                cca = cc5(am);
+                cca = cc9(am);
                 for (int i = 0; i < iterations; i++) {
                     struct timespec begin, end;
                     double cpu_time_used;
                     clock_gettime(CLOCK_REALTIME, &begin);
-                    cca = cc5(am);
+                    cca = cc9(am);
                     clock_gettime(CLOCK_REALTIME, &end);
                     long seconds = end.tv_sec - begin.tv_sec;
                     long nseconds = end.tv_nsec - begin.tv_nsec;

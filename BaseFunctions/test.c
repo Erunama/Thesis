@@ -432,12 +432,23 @@ char *readGraph2(char* filename) {
     return matrix;
 }
 
+// TODO: Swapable implementations
+// TODO: Flags
+// TODO: Produce more than one result at a time
 int main (int argc, char *argv[]) {
     (void) argc;
     (void) argv;
-
     int iterations = 10000;
     int cca = 0;
+    int cca_num = 8;
+
+    char outname[256];
+
+
+    sprintf(outname, "./results/results_cc%d.csv", cca_num);
+    FILE* fout = fopen(outname, "a+");
+    fprintf(fout, "cca,size,density,total_time\n");
+
     for (int size = MIN_GRAPH_SIZE; size < MAX_GRAPH_SIZE; size++) {
         double edge_density = 0.1;
         for (int j = 0; j < 2; j++) {
@@ -446,17 +457,17 @@ int main (int argc, char *argv[]) {
                 double total_time = 0.0;
                 char filename[256];
                 sprintf(filename, "./input/%dsize_%ddens_%d.txt", size, density, inputfile);
-                char outname[256];
-                sprintf(outname, "./results/results_cc9_das2.csv");
-                FILE* fout = fopen(outname, "a+");
+
+
+
                 // struct matrix *am = readGraph(filename);
                 char *am = readGraph2(filename);
-                cca = cc9(am);
+                cca = cc8(am);
                 for (int i = 0; i < iterations; i++) {
                     struct timespec begin, end;
                     double cpu_time_used;
                     clock_gettime(CLOCK_REALTIME, &begin);
-                    cca = cc9(am);
+                    cca = cc8(am);
                     clock_gettime(CLOCK_REALTIME, &end);
                     long seconds = end.tv_sec - begin.tv_sec;
                     long nseconds = end.tv_nsec - begin.tv_nsec;
@@ -467,7 +478,7 @@ int main (int argc, char *argv[]) {
                 free(am);
                 // fprintf(fout, "Input file: %s\n", filename);
                 // fprintf(fout, "Graph size: %d\nEdge density: %d\n", size, density);
-                fprintf(fout, "%d,%d,%.10f\n", size, density, total_time);
+                fprintf(fout, "%d,%d,%d,%.10f\n", cca_num, size, density, total_time);
                 // printf("%.10f\n", total_time);
                 // fprintf(fout, "Average time per iteration: %.10f\n", total_time/iterations);
                 // if (!cca) {
@@ -476,9 +487,11 @@ int main (int argc, char *argv[]) {
                 // else {
                 //     fprintf(fout, "Graph is not connected!\n");
                 // }
-                fclose(fout);
+
+
             }
             edge_density = edge_density + 0.1;
         }
     }
+    fclose(fout);
 }

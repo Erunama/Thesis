@@ -3,7 +3,7 @@ import pandas as pd
 import os
 from glob import glob
 
-PATH = "./results_archive/"
+PATH = "./Results/"
 EXT = "*.csv"
 all_csv_files = [file
                  for path, subdir, files in os.walk(PATH)

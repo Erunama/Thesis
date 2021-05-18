@@ -57,12 +57,13 @@ int cc1(struct matrix *matrix)
 }
 
 /* Basic CC algorithm based on bfs */
-int cc1_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
+double cc1_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
 {
     double total_time = 0.0;
     struct vector *vector = v_fill(matrix->cols, 0);
     v_set(vector, 0, 1);
-    for (int i = 0; i < matrix->rows; i++)
+    int i = 0;
+    for (; i < matrix->rows; i++)
     {
         // RUN TIMERS
         struct timespec begin, end;
@@ -75,20 +76,21 @@ int cc1_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
         long seconds = end.tv_sec - begin.tv_sec;
         long nseconds = end.tv_nsec - begin.tv_nsec;
         cpu_time_used = seconds + nseconds * 1e-9;
-        fprintf(fout, "1,%d,%d,%d,%.10f\n", size, density, i, cpu_time_used);
+        total_time += cpu_time_used;
         // END TIMERS
         // RETURN VALUE?
+
         v_add(vector, res);
         v_free(res);
         v_capped(vector);
         if (v_rank(vector) == vector->size)
         {
             v_free(vector);
-            return 0;
+            return i > 0 ? total_time / i : total_time;
         }
     }
     v_free(vector);
-    return 1;
+    return i > 0 ? total_time / i : total_time;
 }
 
 struct vector *mul_matrix_vector_optimized(struct matrix *matrix, struct vector *vector)
@@ -144,12 +146,14 @@ int cc2(struct matrix *matrix)
 }
 
 /* Basic CC algorithm based on bfs */
-int cc2_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
+double cc2_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
 {
     struct vector *vector = v_fill(matrix->cols, 0);
     *(vector->data) = 1;
     char d = 0;
-    for (int i = 0; i < matrix->rows; i++)
+    double total_time = 0.0;
+    int i = 0;
+    for (; i < matrix->rows; i++)
     {
         struct timespec begin, end;
         double cpu_time_used;
@@ -161,27 +165,27 @@ int cc2_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
         long seconds = end.tv_sec - begin.tv_sec;
         long nseconds = end.tv_nsec - begin.tv_nsec;
         cpu_time_used = seconds + nseconds * 1e-9;
-        fprintf(fout, "1,%d,%d,%d,%.10f\n", size, density, i, cpu_time_used);
+        total_time += cpu_time_used;
 
-        for (int i = 0; i < vector->size; i++)
+        for (int j = 0; j < vector->size; j++)
         {
-            *(vector->data + i) += *(res->data + i);
-            *(vector->data + i) = *(vector->data + i) != 0 ? (*(vector->data + i) / *(vector->data + i)) : 0;
-            d += *(vector->data + i);
+            *(vector->data + j) += *(res->data + j);
+            *(vector->data + j) = *(vector->data + j) != 0 ? (*(vector->data + j) / *(vector->data + j)) : 0;
+            d += *(vector->data + j);
         }
         if (d == vector->size)
         {
             free(vector->data);
             free(vector);
             v_free(res);
-            return 0;
+            return i > 0 ? total_time / i : total_time;
         }
         v_free(res);
         d = 0;
     }
     free(vector->data);
     free(vector);
-    return 1;
+    return i > 0 ? total_time / i : total_time;
 }
 
 /* Basic CC algorithm based on bfs */
@@ -227,7 +231,7 @@ int cc3(struct matrix *matrix)
 }
 
 /* Basic CC algorithm based on bfs */
-int cc3_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
+double cc3_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
 {
     char *vector = calloc(matrix->cols, sizeof(char));
     char *result = calloc(matrix->cols, sizeof(char));
@@ -238,6 +242,7 @@ int cc3_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
     *(vector) = 1;
     char d = 0;
     char iters = 0;
+    double total_time = 0.0;
     do
     {
         struct timespec begin, end;
@@ -258,13 +263,14 @@ int cc3_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
         long seconds = end.tv_sec - begin.tv_sec;
         long nseconds = end.tv_nsec - begin.tv_nsec;
         cpu_time_used = seconds + nseconds * 1e-9;
-        fprintf(fout, "1,%d,%d,%d,%.10f\n", size, density, iters, cpu_time_used);
+        // fprintf(fout, "1,%d,%d,%d,%.10f\n", size, density, iters, cpu_time_used);
+        total_time += cpu_time_used;
 
         if (d == matrix->cols)
         {
             free(vector);
             free(result);
-            return 0;
+            return iters > 0 ? total_time / iters : total_time;
         }
 
         for (int i = 0; i < matrix->cols; i++)
@@ -277,7 +283,7 @@ int cc3_mxv_timed(struct matrix *matrix, FILE *fout, int size, int density)
     } while (iters < matrix->rows);
     free(vector);
     free(result);
-    return 1;
+    return iters > 0 ? total_time / iters : total_time;
 }
 
 int cc4(char *matrix)
@@ -320,7 +326,7 @@ int cc4(char *matrix)
     return 1;
 }
 
-int cc4_mxv_timed(char *matrix, FILE *fout, int size, int density)
+double cc4_mxv_timed(char *matrix, FILE *fout, int size, int density)
 {
     char *vector = calloc(GRAPH_SIZE, sizeof(char));
     char *result = calloc(GRAPH_SIZE, sizeof(char));
@@ -331,6 +337,7 @@ int cc4_mxv_timed(char *matrix, FILE *fout, int size, int density)
     *(vector) = 1;
     char d = 1;
     char iters = 0;
+    double total_time = 0.0;
     do
     {
         struct timespec begin, end;
@@ -349,12 +356,12 @@ int cc4_mxv_timed(char *matrix, FILE *fout, int size, int density)
         long seconds = end.tv_sec - begin.tv_sec;
         long nseconds = end.tv_nsec - begin.tv_nsec;
         cpu_time_used = seconds + nseconds * 1e-9;
-        fprintf(fout, "1,%d,%d,%d,%.10f\n", size, density, iters, cpu_time_used);
+        total_time += cpu_time_used;
         if (d)
         {
             free(vector);
             free(result);
-            return 0;
+            return iters > 0 ? total_time / iters : total_time;
         }
         for (int i = 0; i < GRAPH_SIZE; i++)
         {
@@ -366,7 +373,7 @@ int cc4_mxv_timed(char *matrix, FILE *fout, int size, int density)
     } while (iters < GRAPH_SIZE);
     free(vector);
     free(result);
-    return 1;
+    return iters > 0 ? total_time / iters : total_time;
 }
 
 /* 6 iteration of my CCa
@@ -404,7 +411,7 @@ int cc5(char *matrix)
     return 1;
 }
 
-int cc5_mxv_timed(char *matrix, FILE *fout, int size, int density)
+double cc5_mxv_timed(char *matrix, FILE *fout, int size, int density)
 {
     char *vector = calloc(GRAPH_SIZE, sizeof(char));
     if (!vector)
@@ -414,6 +421,7 @@ int cc5_mxv_timed(char *matrix, FILE *fout, int size, int density)
     *(vector) = 1;
     char d = 1;
     char iters = 0;
+    double total_time = 0.0;
     do
     {
         struct timespec begin, end;
@@ -432,17 +440,17 @@ int cc5_mxv_timed(char *matrix, FILE *fout, int size, int density)
         long seconds = end.tv_sec - begin.tv_sec;
         long nseconds = end.tv_nsec - begin.tv_nsec;
         cpu_time_used = seconds + nseconds * 1e-9;
-        fprintf(fout, "1,%d,%d,%d,%.10f\n", size, density, iters, cpu_time_used);
+        total_time += cpu_time_used;
         if (d)
         {
             free(vector);
-            return 0;
+            return iters > 0 ? total_time / iters : total_time;
         }
         d = 1;
         iters++;
     } while (iters < GRAPH_SIZE);
     free(vector);
-    return 1;
+    return iters > 0 ? total_time / iters : total_time;
 }
 
 int cc6(char *matrix)
@@ -484,7 +492,7 @@ int cc6(char *matrix)
     return 1;
 }
 
-int cc6_mxv_timed(char *matrix, FILE *fout, int size, int density)
+double cc6_mxv_timed(char *matrix, FILE *fout, int size, int density)
 {
     char *vector = calloc(GRAPH_SIZE, sizeof(char));
     if (!vector)
@@ -495,6 +503,7 @@ int cc6_mxv_timed(char *matrix, FILE *fout, int size, int density)
     char d = 1;
     char iters = 0;
     char loop_size = GRAPH_SIZE - 10;
+    double total_time = 0.0;
     do
     {
         struct timespec begin, end;
@@ -519,17 +528,17 @@ int cc6_mxv_timed(char *matrix, FILE *fout, int size, int density)
         long seconds = end.tv_sec - begin.tv_sec;
         long nseconds = end.tv_nsec - begin.tv_nsec;
         cpu_time_used = seconds + nseconds * 1e-9;
-        fprintf(fout, "1,%d,%d,%d,%.10f\n", size, density, iters, cpu_time_used);
+        total_time += cpu_time_used;
         if (d)
         {
             free(vector);
-            return 0;
+            return iters > 0 ? total_time / iters : total_time;
         }
         d = 1;
         iters++;
     } while (iters < GRAPH_SIZE);
     free(vector);
-    return 1;
+    return iters > 0 ? total_time / iters : total_time;
 }
 /* BEST CASE CURRENTLY */
 int cc7(char *matrix)
@@ -585,7 +594,7 @@ int cc7(char *matrix)
 }
 
 /* BEST CASE CURRENTLY */
-int cc7_mxv_timed(char *matrix, FILE *fout, int size, int density)
+double cc7_mxv_timed(char *matrix, FILE *fout, int size, int density)
 {
     char *vector = calloc(GRAPH_SIZE, sizeof(char));
     if (!vector)
@@ -596,6 +605,7 @@ int cc7_mxv_timed(char *matrix, FILE *fout, int size, int density)
     char d = 1;
     char iters = 0;
     char loop_size = GRAPH_SIZE - 10;
+    double total_time = 0.0;
     do
     {
         struct timespec begin, end;
@@ -633,17 +643,18 @@ int cc7_mxv_timed(char *matrix, FILE *fout, int size, int density)
         long seconds = end.tv_sec - begin.tv_sec;
         long nseconds = end.tv_nsec - begin.tv_nsec;
         cpu_time_used = seconds + nseconds * 1e-9;
-        fprintf(fout, "1,%d,%d,%d,%.10f\n", size, density, iters, cpu_time_used);
+        total_time += cpu_time_used;
+        // fprintf(fout, "1,%d,%d,%d,%.10f\n", size, density, iters, cpu_time_used);
         if (d)
         {
             free(vector);
-            return 0;
+            return iters > 0 ? total_time / iters : total_time;
         }
         d = 1;
         iters++;
     } while (iters < GRAPH_SIZE);
     free(vector);
-    return 1;
+    return iters > 0 ? total_time / iters : total_time;
 }
 
 struct matrix *readGraph(char *filename)
@@ -686,13 +697,13 @@ int main(int argc, char *argv[])
 {
     (void)argc;
     (void)argv;
-    int iterations = 10000;
+    int iterations = 1000;
     int cca = 0;
     int cca_num = 1;
 
     char outname[256];
 
-    sprintf(outname, "./results/results_cc%d_mxv.csv", cca_num);
+    sprintf(outname, "./results/results_cc%d_mxv_average.csv", cca_num);
     FILE *fout = fopen(outname, "w");
     fprintf(fout, "cca,size,density,iteration,mxv_time\n");
 
@@ -710,13 +721,13 @@ int main(int argc, char *argv[])
 
                 struct matrix *am = readGraph(filename);
                 // char *am = readGraph2(filename);
-                cca = cc1_mxv_timed(am, fout, size, density);
+                // total_time += cc1_mxv_timed(am, fout, size, density);
                 for (int i = 0; i < iterations; i++)
                 {
                     // struct timespec begin, end;
                     // double cpu_time_used;
                     // clock_gettime(CLOCK_MONOTONIC, &begin);
-                    cca = cc1_mxv_timed(am, fout, size, density);
+                    total_time += cc1_mxv_timed(am, fout, size, density);
                     // clock_gettime(CLOCK_MONOTONIC, &end);
                     // long seconds = end.tv_sec - begin.tv_sec;
                     // long nseconds = end.tv_nsec - begin.tv_nsec;
@@ -727,8 +738,8 @@ int main(int argc, char *argv[])
                 // free(am);
                 // fprintf(fout, "Input file: %s\n", filename);
                 // fprintf(fout, "Graph size: %d\nEdge density: %d\n", size, density);
-                // fprintf(fout, "%d,%d,%d,%.10f\n", cca_num, size, density, total_time);
-                // printf("%.10f\n", total_time);
+                fprintf(fout, "%d,%d,%d,%.10f\n", cca_num, size, density, total_time);
+                printf("%.10f\n", total_time);
                 // fprintf(fout, "Average time per iteration: %.10f\n", total_time/iterations);
                 // if (!cca) {
                 //     fprintf(fout, "Graph is connected!\n");

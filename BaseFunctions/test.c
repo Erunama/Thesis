@@ -657,6 +657,32 @@ double cc7_mxv_timed(char *matrix, FILE *fout, int size, int density)
     return iters > 0 ? total_time / iters : total_time;
 }
 
+int cc8(unsigned int *matrix)
+{
+    unsigned int vector = 0;
+    if (!vector)
+    {
+        return 1;
+    }
+    char d = 1;
+    char iters = 0;
+    do
+    {
+        for (int j = 0; j < GRAPH_SIZE; j++)
+        {
+            vector <<= 1;
+            vector |= ((vector & *(matrix + j)) > 0);
+        }
+        if (d)
+        {
+            return 0;
+        }
+        d = 1;
+        iters++;
+    } while (iters < GRAPH_SIZE);
+    return 1;
+}
+
 struct matrix *readGraph(char *filename)
 {
     FILE *fp = fopen(filename, "r");
@@ -692,12 +718,29 @@ char *readGraph2(char *filename)
     fclose(fp);
     return matrix;
 }
+unsigned int *readGraph3(char *filename)
+{
+    FILE *fp = fopen(filename, "r");
+    int src;
+    int dest;
+
+    fscanf(fp, "%d", &GRAPH_SIZE);
+    // printf("Gs: %d\n", GRAPH_SIZE);
+    unsigned int *matrix = calloc(GRAPH_SIZE, sizeof(unsigned int));
+    while (fscanf(fp, "%d %d", &src, &dest) != EOF)
+    {
+        *(matrix + (src - 1)) |= 1UL << (dest - 1);
+        *(matrix + (dest - 1)) |= 1UL << (src - 1);
+    }
+    fclose(fp);
+    return matrix;
+}
 
 int main(int argc, char *argv[])
 {
     (void)argc;
     (void)argv;
-    int iterations = 1000;
+    int iterations = 1;
     int cca = 0;
     int cca_num = 1;
 
@@ -712,34 +755,40 @@ int main(int argc, char *argv[])
         double edge_density = 0.1;
         for (int j = 0; j < 2; j++)
         {
-            for (int inputfile = 0; inputfile < 5; inputfile++)
+            for (int inputfile = 0; inputfile < 1; inputfile++)
             {
                 int density = (int)(edge_density * 100);
                 double total_time = 0.0;
                 char filename[256];
                 sprintf(filename, "./input/%dsize_%ddens_%d.txt", size, density, inputfile);
 
-                struct matrix *am = readGraph(filename);
+                // struct matrix *am = readGraph(filename);
                 // char *am = readGraph2(filename);
+                int *am = readGraph3(filename);
+                for (int i = 0; i < GRAPH_SIZE; i++)
+                {
+                    printf("%u\n", *(am + (i - 1)));
+                }
+                printf("--\n");
                 // total_time += cc1_mxv_timed(am, fout, size, density);
                 for (int i = 0; i < iterations; i++)
                 {
                     // struct timespec begin, end;
                     // double cpu_time_used;
                     // clock_gettime(CLOCK_MONOTONIC, &begin);
-                    total_time += cc1_mxv_timed(am, fout, size, density);
+                    // total_time += cc1_mxv_timed(am, fout, size, density);
                     // clock_gettime(CLOCK_MONOTONIC, &end);
                     // long seconds = end.tv_sec - begin.tv_sec;
                     // long nseconds = end.tv_nsec - begin.tv_nsec;
                     // cpu_time_used = seconds + nseconds * 1e-9;
                     // total_time = total_time + cpu_time_used;
                 }
-                m_free(am);
-                // free(am);
+                // m_free(am);
+                free(am);
                 // fprintf(fout, "Input file: %s\n", filename);
                 // fprintf(fout, "Graph size: %d\nEdge density: %d\n", size, density);
                 fprintf(fout, "%d,%d,%d,%.10f\n", cca_num, size, density, total_time);
-                printf("%.10f\n", total_time);
+                // printf("%.10f\n", total_time);
                 // fprintf(fout, "Average time per iteration: %.10f\n", total_time/iterations);
                 // if (!cca) {
                 //     fprintf(fout, "Graph is connected!\n");

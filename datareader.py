@@ -26,7 +26,8 @@ for file in all_csv_files:
 result_t = pd.concat(dfs)
 temp_list = [x for _, x in result_t.groupby(result_t.cca)]
 result = pd.concat([temp_list[0], temp_list[1],
-                    temp_list[4], temp_list[6], temp_list[7]])
+                    temp_list[4], temp_list[6], temp_list[7], temp_list[8],
+                    temp_list[9]])
 result_t2 = pd.concat(mxvs)
 temp_list2 = [x for _, x in result_t2.groupby(result_t2.cca)]
 mxv_res = pd.concat([temp_list2[0], temp_list2[4],

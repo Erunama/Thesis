@@ -677,6 +677,7 @@ int cc8(unsigned int *matrix)
 {
     unsigned int vector = 0;
     vector |= 1;
+
     char iters = 0;
     unsigned int temp = vector;
     do
@@ -763,25 +764,77 @@ int cc8_timed(unsigned int *matrix)
 
 int cc9(unsigned int *matrix)
 {
-    unsigned int vector = *(matrix + 0);
-    // vector |= 1 << (GRAPH_SIZE - 1);
-    vector |= *(matrix + 1);
-    vector |= *(matrix + 2);
-    vector |= *(matrix + 3);
-    vector |= *(matrix + 4);
-    vector |= *(matrix + 5);
-    vector |= *(matrix + 6);
-    vector |= *(matrix + 7);
-    vector |= *(matrix + 8);
-    vector |= *(matrix + 9);
-    for (int j = 10; j < GRAPH_SIZE; j++)
+    unsigned int vector = 0;
+    vector |= 1 << (int)(GRAPH_SIZE / 2);
+
+    char iters = 0;
+    unsigned int temp = vector;
+    do
     {
-        vector |= *(matrix + j);
-    }
-    if ((vector + 1) == (1 << GRAPH_SIZE))
+        vector |= (((vector & *(matrix + 0)) > 0) << 0);
+        vector |= (((vector & *(matrix + 1)) > 0) << 1);
+        vector |= (((vector & *(matrix + 2)) > 0) << 2);
+        vector |= (((vector & *(matrix + 3)) > 0) << 3);
+        vector |= (((vector & *(matrix + 4)) > 0) << 4);
+        vector |= (((vector & *(matrix + 5)) > 0) << 5);
+        vector |= (((vector & *(matrix + 6)) > 0) << 6);
+        vector |= (((vector & *(matrix + 7)) > 0) << 7);
+        vector |= (((vector & *(matrix + 8)) > 0) << 8);
+        vector |= (((vector & *(matrix + 9)) > 0) << 9);
+        for (int j = 10; j < (GRAPH_SIZE); j++)
+        {
+            vector |= (((vector & *(matrix + j)) > 0) << j);
+        }
+        if ((vector + 1) == (1 << GRAPH_SIZE))
+        {
+            return 0;
+        }
+        if (temp == vector)
+        {
+            return 1;
+        }
+
+        temp = vector;
+        iters++;
+    } while (iters < GRAPH_SIZE);
+    return 1;
+}
+
+int cc10(unsigned int *matrix)
+{
+    unsigned int vector = 0;
+    vector |= 1 << (int)(GRAPH_SIZE / 2);
+    unsigned int vector2 = 0;
+    vector2 |= 1 << (int)(GRAPH_SIZE / 2);
+
+    char iters = 0;
+    unsigned int temp = vector;
+    do
     {
-        return 0;
-    }
+        int j = 0;
+        for (; j < (GRAPH_SIZE - 1); j += 2)
+        {
+            vector |= (((vector & *(matrix + j)) > 0) << j);
+            vector2 |= (((vector2 & *(matrix + (j + 1))) > 0) << (j + 1));
+        }
+        for (; j < (GRAPH_SIZE); j++)
+        {
+            vector |= (((vector & *(matrix + j)) > 0) << j);
+        }
+        vector |= vector2;
+        if ((vector + 1) == (1 << GRAPH_SIZE))
+        {
+            return 0;
+        }
+        if (temp == vector)
+        {
+            return 1;
+        }
+
+        temp = vector;
+        vector2 = vector;
+        iters++;
+    } while (iters < GRAPH_SIZE);
     return 1;
 }
 
@@ -951,7 +1004,7 @@ int main(int argc, char *argv[])
     (void)argv;
     int iterations = 1000000;
     double cca = 0;
-    int cca_num = 8;
+    int cca_num = 10;
 
     char outname[256];
 
@@ -974,13 +1027,14 @@ int main(int argc, char *argv[])
 
                 // struct matrix *am = readGraph(filename);
                 // char *am = readGraph2(filename);
+                // print_bit(1 << 10);
                 int *am = readGraph3(filename);
                 // for (int i = 0; i < GRAPH_SIZE; i++)
                 // {
                 //     print_bit(*(am + (i)));
                 // }
                 // printf("--\n");
-                cca = cc8(am);
+                cca = cc10(am);
                 for (int i = 0; i < iterations; i++)
                 {
                     // printf("--\n");
@@ -988,7 +1042,7 @@ int main(int argc, char *argv[])
                     double cpu_time_used;
                     clock_gettime(CLOCK_MONOTONIC, &begin);
                     // cca = cc11(am);
-                    cca = cc8(am);
+                    cca = cc10(am);
                     // printf("%f\n", cca);
                     clock_gettime(CLOCK_MONOTONIC, &end);
                     long seconds = end.tv_sec - begin.tv_sec;
@@ -1000,7 +1054,7 @@ int main(int argc, char *argv[])
                 free(am);
                 // fprintf(fout, "Input file: %s\n", filename);
                 // fprintf(fout, "Graph size: %d\nEdge density: %d\n", size, density);
-                fprintf(fout, "%d,%d,%d,%.10f\n", cca_num, size, density, total_time);
+                // fprintf(fout, "%d,%d,%d,%.10f\n", cca_num, size, density, total_time);
                 // fprintf(fout, "%d,%d,%d,%.10f\n", cca_num, size, density, cca);
                 // printf("%d,%d,%d,%.10f\n", cca_num, size, density, cca);
                 // fprintf(fout, "Average time per iteration: %.10f\n", total_time / iterations);

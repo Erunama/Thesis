@@ -800,129 +800,6 @@ int cc9(unsigned int *matrix)
     return 1;
 }
 
-int cc10(unsigned int *matrix)
-{
-    unsigned int vector = 0;
-    vector |= 1 << (int)(GRAPH_SIZE / 2);
-    unsigned int vector2 = 0;
-    vector2 |= 1 << (int)(GRAPH_SIZE / 2);
-
-    char iters = 0;
-    unsigned int temp = vector;
-    do
-    {
-        int j = 0;
-        for (; j < (GRAPH_SIZE - 1); j += 2)
-        {
-            vector |= (((vector & *(matrix + j)) > 0) << j);
-            vector2 |= (((vector2 & *(matrix + (j + 1))) > 0) << (j + 1));
-        }
-        for (; j < (GRAPH_SIZE); j++)
-        {
-            vector |= (((vector & *(matrix + j)) > 0) << j);
-        }
-        vector |= vector2;
-        if ((vector + 1) == (1 << GRAPH_SIZE))
-        {
-            return 0;
-        }
-        if (temp == vector)
-        {
-            return 1;
-        }
-
-        temp = vector;
-        vector2 = vector;
-        iters++;
-    } while (iters < GRAPH_SIZE);
-    return 1;
-}
-
-/*
-unsigned int hsum_epi32_avx(__m128i x)
-{
-    __m128i hi64 = _mm_unpackhi_epi64(x, x); // 3-operand non-destructive AVX lets us save a byte without needing a movdqa
-    __m128i sum64 = _mm_add_epi32(hi64, x);
-    __m128i hi32 = _mm_shuffle_epi32(sum64, _MM_SHUFFLE(2, 3, 0, 1)); // Swap the low two elements
-    __m128i sum32 = _mm_add_epi32(sum64, hi32);
-    return _mm_cvtsi128_si32(sum32); // movd
-}
-
-// only needs AVX2
-unsigned int hsum_8x32(__m256i v)
-{
-    __m128i sum128 = _mm_add_epi32(
-        _mm256_castsi256_si128(v),
-        _mm256_extracti128_si256(v, 1)); // silly GCC uses a longer AXV512VL instruction if AVX512 is enabled :/
-    return hsum_epi32_avx(sum128);
-}
-
-int cc11(unsigned int *matrix)
-{
-
-    int matrixt[8] = {1, 2, 3, 4, 5, 6, 7, 8};
-    int vectort = 3;
-    int n_values = 256 / (8 * sizeof(int));
-    // Load matrix into SIMD datatype
-    __m256i simd_matrix = _mm256_loadu_si256((__m256i *)matrixt);
-    // Load vector as a constant into the SIMD datatype
-
-    // Multiply matrix and vector (mullo because we dont care about overflow)
-    // _mm256_mul_epi32 would also multiply, but it would use 64 bits for the result.
-
-    _mm256_storeu_si256((__m256i *)matrixt, simd_result);
-    for (int i = 0; i < n_values; i++)
-    {
-        printf("%d\n", matrixt[i]);
-    }
-    __m256i simd_vector = _mm256_set1_epi32(vectort);
-    for (int i = 0; i < GRAPH_SIZE - 1; i += 8)
-    {
-        __m256i simd_matrix = _mm256_loadu_si256((__m256i *)matrix + i);
-        __m256i simd_result = _mm256_mullo_epi32(simd_matrix, simd_vector);
-    }
-    // Store result back into matrix.
-    unsigned int tester = hsum_8x32(simd_result);
-
-    printf("%u\n", tester);
-
-    unsigned int vector = 0;
-    vector |= 1 << (GRAPH_SIZE - 1);
-    char iters = 0;
-    unsigned int temp = vector;
-    do
-    {
-        vector |= (((vector & *(matrix + 0)) > 0) << 0);
-        vector |= (((vector & *(matrix + 1)) > 0) << 1);
-        vector |= (((vector & *(matrix + 2)) > 0) << 2);
-        vector |= (((vector & *(matrix + 3)) > 0) << 3);
-        vector |= (((vector & *(matrix + 4)) > 0) << 4);
-        vector |= (((vector & *(matrix + 5)) > 0) << 5);
-        vector |= (((vector & *(matrix + 6)) > 0) << 6);
-        vector |= (((vector & *(matrix + 7)) > 0) << 7);
-        vector |= (((vector & *(matrix + 8)) > 0) << 8);
-        vector |= (((vector & *(matrix + 9)) > 0) << 9);
-        for (int j = 10; j < (GRAPH_SIZE - 10); j++)
-        {
-            vector |= (((vector & *(matrix + j)) > 0) << j);
-        }
-
-        if ((vector + 1) == (1 << GRAPH_SIZE))
-        {
-            return 0;
-        }
-
-        if (temp == vector)
-        {
-            return 1;
-        }
-
-        temp = vector;
-        iters++;
-    } while (iters < GRAPH_SIZE);
-    return 1;
-}
-*/
 struct matrix *readGraph(char *filename)
 {
     FILE *fp = fopen(filename, "r");
@@ -1004,14 +881,15 @@ int main(int argc, char *argv[])
     (void)argv;
     int iterations = 1000000;
     double cca = 0;
-    int cca_num = 10;
+    int cca_num = 9;
 
     char outname[256];
 
-    sprintf(outname, "./results/results_new_cc%d.csv", cca_num);
+    sprintf(outname, "./results/results_real_case_cc%d.csv", cca_num);
     FILE *fout = fopen(outname, "w");
     // fprintf(fout, "cca,size,density,iteration,mxv_time\n");
-    fprintf(fout, "cca,size,density,total_time\n");
+    // fprintf(fout, "cca,size,density,total_time\n");
+    fprintf(fout, "cca,size,total_time\n");
 
     for (int size = MIN_GRAPH_SIZE; size < MAX_GRAPH_SIZE + 1; size++)
     {
@@ -1024,6 +902,7 @@ int main(int argc, char *argv[])
                 double total_time = 0.0;
                 char filename[256];
                 sprintf(filename, "./input/%dsize_%ddens_%d.txt", size, density, inputfile);
+                // sprintf(filename, "./hive_graphs/hive", size, density, inputfile);
 
                 // struct matrix *am = readGraph(filename);
                 // char *am = readGraph2(filename);
@@ -1052,21 +931,48 @@ int main(int argc, char *argv[])
                 }
                 // m_free(am);
                 free(am);
-                // fprintf(fout, "Input file: %s\n", filename);
-                // fprintf(fout, "Graph size: %d\nEdge density: %d\n", size, density);
                 // fprintf(fout, "%d,%d,%d,%.10f\n", cca_num, size, density, total_time);
                 // fprintf(fout, "%d,%d,%d,%.10f\n", cca_num, size, density, cca);
-                // printf("%d,%d,%d,%.10f\n", cca_num, size, density, cca);
-                // fprintf(fout, "Average time per iteration: %.10f\n", total_time / iterations);
-                // if (!cca) {
-                //     fprintf(fout, "Graph is connected!\n");
-                // }
-                // else {
-                //     fprintf(fout, "Graph is not connected!\n");
-                // }
+
+                edge_density = edge_density + 0.1;
             }
-            edge_density = edge_density + 0.1;
         }
+
+        // for (int inputfile = 0; inputfile < 10; inputfile++)
+        // {
+
+        //     double total_time = 0.0;
+        //     char filename[256];
+        //     sprintf(filename, "./hive_graphs/hive/hive%d.txt", inputfile);
+
+        //     // struct matrix *am = readGraph(filename);
+        //     // char *am = readGraph2(filename);
+        //     // print_bit(1 << 10);
+        //     int *am = readGraph3(filename);
+        //     // for (int i = 0; i < GRAPH_SIZE; i++)
+        //     // {
+        //     //     print_bit(*(am + (i)));
+        //     // }
+        //     // printf("--\n");
+        //     cca = cc9(am);
+        //     for (int i = 0; i < iterations; i++)
+        //     {
+        //         // printf("--\n");
+        //         struct timespec begin, end;
+        //         double cpu_time_used;
+        //         clock_gettime(CLOCK_MONOTONIC, &begin);
+        //         // cca = cc11(am);
+        //         cca = cc9(am);
+        //         clock_gettime(CLOCK_MONOTONIC, &end);
+        //         long seconds = end.tv_sec - begin.tv_sec;
+        //         long nseconds = end.tv_nsec - begin.tv_nsec;
+        //         cpu_time_used = seconds + nseconds * 1e-9;
+        //         total_time = total_time + cpu_time_used;
+        //     }
+        //     // m_free(am);
+        //     free(am);
+        //     fprintf(fout, "%d,%d,%.10f\n", cca_num, GRAPH_SIZE, total_time);
+        // }
+
+        fclose(fout);
     }
-    fclose(fout);
-}

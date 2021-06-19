@@ -1,5 +1,2 @@
-# Thesis
-This is a repository for the thesis information of my thesis.
-
-## Connected Components
-It contains multiple CCa implementations.
+# Connected components
+This repository contains multiple connected components algorithms. Based on my work.

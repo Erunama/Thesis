@@ -3,7 +3,7 @@ import pandas as pd
 import os
 from glob import glob
 
-PATH = "./Results/"
+PATH = "./Algorithms/"
 EXT = "*.csv"
 all_csv_files = [file
                  for path, subdir, files in os.walk(PATH)
@@ -12,7 +12,7 @@ all_csv_files = [file
 # TODO: Add some variable data,
 # TODO: Graph swapping maybe?
 # dfs = []
-# for file in glob.glob("./results/*.csv"):
+# for file in glob.glob("./Algorithms/*.csv"):
 #     dfs.append(pd.read_csv(file))
 dfs = []
 mxvs = []
@@ -281,16 +281,16 @@ fig13.update_xaxes(showline=True, linewidth=1, linecolor='grey',
 fig13.update_yaxes(showline=True, linewidth=1, linecolor='grey',
                    mirror=True, gridwidth=1, gridcolor='grey')
 
-# fig2.write_image("./Results/Graphsdump/pdfs/cc1_d10.pdf")
-# fig3.write_image("./Results/Graphsdump/pdfs/cc1_d20.pdf")
-# fig7.write_image("./Results/Graphsdump/pdfs/mxv_cc1_d10.pdf")
-# fig8.write_image("./Results/Graphsdump/pdfs/mxv_cc1_d20.pdf")
+# fig2.write_image("./Algorithms/Graphsdump/pdfs/cc1_d10.pdf")
+# fig3.write_image("./Algorithms/Graphsdump/pdfs/cc1_d20.pdf")
+# fig7.write_image("./Algorithms/Graphsdump/pdfs/mxv_cc1_d10.pdf")
+# fig8.write_image("./Algorithms/Graphsdump/pdfs/mxv_cc1_d20.pdf")
 
 
-# fig9.write_image("./Results/Graphsdump/pdfs/real_result.pdf")
-# fig10.write_image("./Results/Graphsdump/pdfs/speedup.pdf")
-# fig11.write_image("./Results/Graphsdump/pdfs/speedup_mxv.pdf")
-# fig13.write_image("./Results/Graphsdump/pdfs/speedup_real.pdf")
+# fig9.write_image("./Algorithms/Graphsdump/pdfs/real_result.pdf")
+# fig10.write_image("./Algorithms/Graphsdump/pdfs/speedup.pdf")
+# fig11.write_image("./Algorithms/Graphsdump/pdfs/speedup_mxv.pdf")
+# fig13.write_image("./Algorithms/Graphsdump/pdfs/speedup_real.pdf")
 
 # fig1.show()
 # fig2.show()

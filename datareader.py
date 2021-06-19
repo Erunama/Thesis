@@ -87,7 +87,7 @@ bar_fram2 = pd.DataFrame(bar_list_2, columns=['cca', 'speedup', 'size'])
 
 average_list2 = [0.0073/(tmp2[1]["total_time"].mean()),
                  0.0073/(tmp2[2]["total_time"].mean())]
-bar_list_4 = {'cca': ['V8', 'Ruben'],
+bar_list_4 = {'cca': ['V8', 'RB'],
               'speedup': average_list2, 'size': ['22', '22']}
 bar_fram4 = pd.DataFrame(bar_list_4, columns=['cca', 'speedup', 'size'])
 
@@ -127,7 +127,7 @@ color_map = {
     "8": '#0053c5',
     "9": '#c50018',
     "V8": '#0053c5',
-    "Ruben": '#c50018',
+    "RB": '#c50018',
     "Current Hive": '#00c5ad'
 }
 
@@ -255,7 +255,7 @@ fig_list_2 = [fig2, fig3, fig7, fig8, fig9]
 for fig in fig_list:
     for trace in fig.data:
         if trace.name == "9":
-            trace.name = "Ruben"
+            trace.name = "RB"
         else:
             trace.name = "V" + trace.name
     fig.update_layout({'plot_bgcolor': 'rgba(0, 0, 0, 0)'
@@ -281,10 +281,10 @@ fig13.update_xaxes(showline=True, linewidth=1, linecolor='grey',
 fig13.update_yaxes(showline=True, linewidth=1, linecolor='grey',
                    mirror=True, gridwidth=1, gridcolor='grey')
 
-fig2.write_image("./Results/Graphsdump/pdfs/cc1_d10.pdf")
-fig3.write_image("./Results/Graphsdump/pdfs/cc1_d20.pdf")
-fig7.write_image("./Results/Graphsdump/pdfs/mxv_cc1_d10.pdf")
-fig8.write_image("./Results/Graphsdump/pdfs/mxv_cc1_d20.pdf")
+# fig2.write_image("./Results/Graphsdump/pdfs/cc1_d10.pdf")
+# fig3.write_image("./Results/Graphsdump/pdfs/cc1_d20.pdf")
+# fig7.write_image("./Results/Graphsdump/pdfs/mxv_cc1_d10.pdf")
+# fig8.write_image("./Results/Graphsdump/pdfs/mxv_cc1_d20.pdf")
 
 
 # fig9.write_image("./Results/Graphsdump/pdfs/real_result.pdf")
@@ -302,8 +302,8 @@ print("Fertig")
 # fig8.show()
 
 # fig9.show()
-# fig10.show()
-# fig11.show()
+fig10.show()
+fig11.show()
 
 
 # fig13.show()
